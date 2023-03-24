@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-
   cups:
     build: .
     image: drcoccodrillus/cups:dev
@@ -13,9 +12,14 @@ services:
     ports:
       - "8631:631"
     networks:
-      - printer-network
+      printer-network:
+        ipv4_address: 172.28.0.2
 
 networks:
   printer-network:
     name: printer-network
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1

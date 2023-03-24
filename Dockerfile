@@ -1,8 +1,8 @@
-FROM ubuntu:22.04 AS base
+FROM ubuntu:18.04 AS base
 
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     apt-utils \
     usbutils \
     cups \
@@ -14,10 +14,18 @@ RUN apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt
 
-COPY ./cups /install/cups
+COPY ./test-files /printers
 
-WORKDIR /install/cups
-RUN cp -f cupsd.conf /etc/cups/cupsd.conf
-RUN rm -r /install
+WORKDIR /usr/lib/cups/filter
+COPY ./cups/filter/. .
+RUN chmod +x *
 
-CMD ["/usr/sbin/cupsd", "-f"]
+WORKDIR /usr/share/ppd/cupsfilters
+COPY ./cups/ppd/. .
+RUN chmod +x *.ppd
+
+WORKDIR /etc/cups
+COPY ./cups/cupsd.conf .
+
+WORKDIR /
+ENTRYPOINT ["/usr/sbin/cupsd", "-f"]
